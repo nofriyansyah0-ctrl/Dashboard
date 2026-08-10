@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Monitor — Kompetitor TikTok</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0e;
+    --bg-panel: #121518;
+    --line: #23282d;
+    --text: #e9e7e0;
+    --text-dim: #7b8288;
+    --live: #ff4433;
+    --live-dim: #4a1f1a;
+    --idle: #2fbf8f;
+    --signal: #ffb545;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Archivo', sans-serif;
+    min-height: 100vh;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+  }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 28px 40px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+
+  .brand h1 {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -0.01em;
+  }
+
+  .brand .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .stat-row {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat .num {
+    font-size: 26px;
+    font-weight: 600;
+  }
+
+  .stat.on-air .num { color: var(--live); }
+
+  .stat .label {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  button#refresh {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 10px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  button#refresh:hover { border-color: var(--text-dim); background: rgba(255,255,255,0.03); }
+  button#refresh:disabled { opacity: 0.5; cursor: default; }
+
+  main { padding: 32px 40px 60px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+  }
+
+  .card {
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+
+  .card.live {
+    border-color: var(--live-dim);
+    box-shadow: 0 0 0 1px rgba(255,68,51,0.15), 0 8px 24px -12px rgba(255,68,51,0.3);
+  }
+
+  .card.live::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--live);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #1c2024;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    color: var(--text-dim);
+    border: 1px solid var(--line);
+  }
+
+  .card.live .avatar { border-color: var(--live); }
+
+  .who { min-width: 0; }
+
+  .username {
+    font-weight: 700;
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .status-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #3a4046;
+    flex-shrink: 0;
+  }
+
+  .card.live .dot {
+    background: var(--live);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+
+  .card.live .status-line { color: var(--live); font-weight: 500; }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,68,51,0.55); }
+    50% { box-shadow: 0 0 0 5px rgba(255,68,51,0); }
+  }
+
+  .title-text {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 18px;
+  }
+
+  .card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  .viewers {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--signal);
+    font-weight: 600;
+  }
+
+  .viewers .label { color: var(--text-dim); font-weight: 400; margin-left: 4px; }
+
+  a.open-link {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid transparent;
+  }
+  a.open-link:hover { color: var(--text); border-color: var(--text-dim); }
+
+  .empty {
+    text-align: center;
+    padding: 100px 20px;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+  }
+
+  .footer-note {
+    margin-top: 40px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  @media (max-width: 600px) {
+    .topbar { padding: 20px; }
+    main { padding: 20px 20px 40px; }
+    .stat-row { gap: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <h1>Live Monitor</h1>
+    <span class="tag">Kompetitor · TikTok</span>
+  </div>
+  <div class="stat-row">
+    <div class="stat on-air">
+      <span class="num" id="stat-live">–</span>
+      <span class="label">Sedang Live</span>
+    </div>
+    <div class="stat">
+      <span class="num" id="stat-total">–</span>
+      <span class="label">Dipantau</span>
+    </div>
+    <div class="stat">
+      <span class="num" id="stat-updated">–</span>
+      <span class="label">Update Terakhir</span>
+    </div>
+    <button id="refresh">↻ Refresh</button>
+  </div>
+</div>
+
+<main>
+  <div class="grid" id="grid">
+    <div class="empty">Memuat data akun…</div>
+  </div>
+  <div class="footer-note">Auto-refresh tiap 30 detik · Data diambil dari status live TikTok tiap akun</div>
+</main>
+
+<script>
+  // Ganti dengan URL backend Railway kamu, misal:
+  // const API_BASE = "https://tiktok-live-monitor-production.up.railway.app";
+  const API_BASE = "https://report-marketing-production.up.railway.app";
+
+  const grid = document.getElementById('grid');
+  const statLive = document.getElementById('stat-live');
+  const statTotal = document.getElementById('stat-total');
+  const statUpdated = document.getElementById('stat-updated');
+  const refreshBtn = document.getElementById('refresh');
+
+  function initials(name) {
+    return name.slice(0, 2).toUpperCase();
+  }
+
+  function timeAgo(isoString) {
+    if (!isoString) return '–';
+    const diffMs = Date.now() - new Date(isoString).getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'baru saja';
+    if (mins < 60) return `${mins} menit lalu`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs} jam lalu`;
+    return `${Math.floor(hrs / 24)} hari lalu`;
+  }
+
+  function formatViewers(n) {
+    if (n === null || n === undefined) return null;
+    if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'rb';
+    return String(n);
+  }
+
+  function renderCard(acc) {
+    const isLive = !!acc.is_live;
+    const avatarStyle = acc.avatar_url ? `style="background-image:url('${acc.avatar_url}')"` : '';
+    const avatarContent = acc.avatar_url ? '' : initials(acc.username);
+    const viewers = formatViewers(acc.viewer_count);
+
+    return `
+      <div class="card ${isLive ? 'live' : ''}">
+        <div class="card-top">
+          <div class="avatar" ${avatarStyle}>${avatarContent}</div>
+          <div class="who">
+            <div class="username">@${acc.username}</div>
+            <div class="status-line">
+              <span class="dot"></span>
+              ${isLive ? 'LIVE SEKARANG' : 'Offline · terakhir dicek ' + timeAgo(acc.last_checked)}
+            </div>
+          </div>
+        </div>
+        ${isLive ? `<div class="title-text">${acc.title || 'Tanpa judul'}</div>` : `<div class="title-text"></div>`}
+        <div class="card-bottom">
+          <div class="viewers">
+            ${isLive && viewers ? viewers + '<span class="label">penonton</span>' : ''}
+          </div>
+          <a class="open-link" href="https://www.tiktok.com/@${acc.username}/live" target="_blank" rel="noopener">Buka →</a>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadStatus() {
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = '↻ Memuat…';
+    try {
+      const res = await fetch(`${API_BASE}/api/status`);
+      const data = await res.json();
+      const accounts = data.accounts || [];
+
+      if (accounts.length === 0) {
+        grid.innerHTML = '<div class="empty">Belum ada data. Menunggu pengecekan pertama…</div>';
+      } else {
+        grid.innerHTML = accounts.map(renderCard).join('');
+      }
+
+      const liveCount = accounts.filter(a => a.is_live).length;
+      statLive.textContent = liveCount;
+      statTotal.textContent = accounts.length;
+      statUpdated.textContent = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    } catch (err) {
+      grid.innerHTML = `<div class="empty">Gagal memuat data. Pastikan backend aktif di ${API_BASE}.<br><br>(${err.message})</div>`;
+    } finally {
+      refreshBtn.disabled = false;
+      refreshBtn.textContent = '↻ Refresh';
+    }
+  }
+
+  refreshBtn.addEventListener('click', loadStatus);
+  loadStatus();
+  setInterval(loadStatus, 30000);
+</script>
+
+</body>
+</html>
