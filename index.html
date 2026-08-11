@@ -108,6 +108,8 @@
     display: flex;
     gap: 8px;
     margin-bottom: 24px;
+    flex-wrap: wrap;
+    align-items: center;
   }
 
   .filter-btn {
@@ -130,6 +132,48 @@
     border-color: var(--text);
     color: var(--bg);
     font-weight: 600;
+  }
+
+  .search-box {
+    position: relative;
+    margin-left: auto;
+  }
+
+  .search-box input {
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 8px 12px 8px 30px;
+    border-radius: 3px;
+    width: 200px;
+    transition: border-color 0.15s, width 0.2s;
+  }
+
+  .search-box input:focus {
+    outline: none;
+    border-color: var(--text-dim);
+    width: 240px;
+  }
+
+  .search-box input::placeholder { color: var(--text-dim); }
+
+  .search-box svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 13px;
+    height: 13px;
+    stroke: var(--text-dim);
+    pointer-events: none;
+  }
+
+  @media (max-width: 600px) {
+    .search-box { margin-left: 0; width: 100%; }
+    .search-box input { width: 100%; }
+    .search-box input:focus { width: 100%; }
   }
 
   .grid {
@@ -318,6 +362,13 @@
     <button class="filter-btn active" data-region="all">Semua</button>
     <button class="filter-btn" data-region="jogja">Jogja</button>
     <button class="filter-btn" data-region="luar_jogja">Luar Jogja</button>
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" id="search-input" placeholder="Cari akun…" autocomplete="off">
+    </div>
   </div>
   <div class="grid" id="grid">
     <div class="empty">Memuat data akun…</div>
@@ -336,9 +387,11 @@
   const statUpdated = document.getElementById('stat-updated');
   const refreshBtn = document.getElementById('refresh');
   const filterButtons = document.querySelectorAll('.filter-btn');
+  const searchInput = document.getElementById('search-input');
 
   let allAccounts = [];       // data mentah terakhir dari backend
   let currentRegion = 'all';  // filter aktif: all | jogja | luar_jogja
+  let currentSearch = '';     // teks pencarian aktif (lowercase)
 
   function initials(name) {
     return name.slice(0, 2).toUpperCase();
@@ -391,12 +444,16 @@
   }
 
   function applyFilterAndRender() {
-    const filtered = currentRegion === 'all'
+    let filtered = currentRegion === 'all'
       ? allAccounts
       : allAccounts.filter(a => a.region === currentRegion);
 
+    if (currentSearch) {
+      filtered = filtered.filter(a => a.username.toLowerCase().includes(currentSearch));
+    }
+
     if (filtered.length === 0) {
-      grid.innerHTML = '<div class="empty">Tidak ada akun untuk filter ini.</div>';
+      grid.innerHTML = '<div class="empty">Tidak ada akun yang cocok.</div>';
     } else {
       grid.innerHTML = filtered.map(renderCard).join('');
     }
@@ -438,6 +495,11 @@
       currentRegion = btn.dataset.region;
       applyFilterAndRender();
     });
+  });
+
+  searchInput.addEventListener('input', () => {
+    currentSearch = searchInput.value.trim().toLowerCase();
+    applyFilterAndRender();
   });
 
   refreshBtn.addEventListener('click', loadStatus);
