@@ -5,66 +5,87 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Live Monitor — Kompetitor TikTok</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0c0e;
-    --bg-panel: #121518;
-    --line: #23282d;
-    --text: #e9e7e0;
-    --text-dim: #7b8288;
-    --live: #ff4433;
-    --live-dim: #4a1f1a;
-    --idle: #2fbf8f;
-    --signal: #ffb545;
+    --bg: #171310;
+    --bg-panel: #201a15;
+    --bg-panel-live: #2b1d10;
+    --line: #362d24;
+    --line-live: #5c3a14;
+    --text: #f3ece1;
+    --text-dim: #96897a;
+    --live: #ff7a1a;
+    --live-soft: rgba(255, 122, 26, 0.16);
+    --cool: #4fd1c5;
+    --gold: #ffc857;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: var(--bg);
+    background:
+      radial-gradient(1200px 500px at 15% -10%, rgba(255,122,26,0.05), transparent),
+      var(--bg);
     color: var(--text);
-    font-family: 'Archivo', sans-serif;
+    font-family: 'IBM Plex Sans', sans-serif;
     min-height: 100vh;
-    background-image:
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
   }
+
+  /* ---------- Topbar ---------- */
 
   .topbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 28px 40px;
+    padding: 24px 40px;
     border-bottom: 1px solid var(--line);
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 20px;
   }
 
   .brand {
     display: flex;
-    align-items: baseline;
-    gap: 14px;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .brand .airbox {
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--bg);
+    background: var(--live);
+    padding: 4px 8px 3px;
+    border-radius: 3px;
+    line-height: 1;
   }
 
   .brand h1 {
-    font-size: 22px;
-    font-weight: 900;
-    letter-spacing: -0.01em;
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    line-height: 1;
   }
 
   .brand .tag {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
     color: var(--text-dim);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
+    margin-top: 3px;
+    display: block;
   }
+
+  .brand-text { display: flex; flex-direction: column; }
 
   .stat-row {
     display: flex;
     align-items: center;
-    gap: 28px;
-    font-family: 'IBM Plex Mono', monospace;
+    gap: 30px;
   }
 
   .stat {
@@ -74,18 +95,44 @@
   }
 
   .stat .num {
-    font-size: 26px;
-    font-weight: 600;
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
   }
 
-  .stat.on-air .num { color: var(--live); }
+  .stat.on-air .num { color: var(--live); display: flex; align-items: baseline; gap: 8px; }
 
   .stat .label {
+    font-family: 'IBM Plex Mono', monospace;
     font-size: 10px;
     color: var(--text-dim);
     letter-spacing: 0.1em;
     text-transform: uppercase;
   }
+
+  /* animated equalizer bars next to the live count -- signature element */
+  .eq {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 16px;
+  }
+  .eq span {
+    width: 3px;
+    background: var(--live);
+    border-radius: 1px;
+    animation: eq-bounce 0.9s ease-in-out infinite;
+  }
+  .eq span:nth-child(1) { height: 40%; animation-delay: -0.6s; }
+  .eq span:nth-child(2) { height: 100%; animation-delay: -0.3s; }
+  .eq span:nth-child(3) { height: 65%; animation-delay: -0.9s; }
+  .eq span:nth-child(4) { height: 85%; animation-delay: -0.15s; }
+  @keyframes eq-bounce {
+    0%, 100% { transform: scaleY(0.35); }
+    50% { transform: scaleY(1); }
+  }
+  .eq.paused span { animation-play-state: paused; transform: scaleY(0.2); }
 
   button#refresh {
     background: transparent;
@@ -99,8 +146,10 @@
     letter-spacing: 0.05em;
     transition: border-color 0.15s, background 0.15s;
   }
-  button#refresh:hover { border-color: var(--text-dim); background: rgba(255,255,255,0.03); }
+  button#refresh:hover { border-color: var(--live); background: var(--live-soft); }
   button#refresh:disabled { opacity: 0.5; cursor: default; }
+
+  /* ---------- Main / filters ---------- */
 
   main { padding: 24px 40px 60px; }
 
@@ -119,17 +168,17 @@
     font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
     padding: 8px 16px;
-    border-radius: 3px;
+    border-radius: 20px;
     cursor: pointer;
     letter-spacing: 0.03em;
     transition: all 0.15s;
   }
 
-  .filter-btn:hover { border-color: var(--text-dim); color: var(--text); }
+  .filter-btn:hover { border-color: var(--live); color: var(--text); }
 
   .filter-btn.active {
-    background: var(--text);
-    border-color: var(--text);
+    background: var(--live);
+    border-color: var(--live);
     color: var(--bg);
     font-weight: 600;
   }
@@ -146,14 +195,14 @@
     font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
     padding: 8px 12px 8px 30px;
-    border-radius: 3px;
+    border-radius: 20px;
     width: 200px;
     transition: border-color 0.15s, width 0.2s;
   }
 
   .search-box input:focus {
     outline: none;
-    border-color: var(--text-dim);
+    border-color: var(--live);
     width: 240px;
   }
 
@@ -161,7 +210,7 @@
 
   .search-box svg {
     position: absolute;
-    left: 10px;
+    left: 11px;
     top: 50%;
     transform: translateY(-50%);
     width: 13px;
@@ -176,6 +225,8 @@
     .search-box input:focus { width: 100%; }
   }
 
+  /* ---------- Grid & cards ---------- */
+
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -185,7 +236,7 @@
   .card {
     background: var(--bg-panel);
     border: 1px solid var(--line);
-    border-radius: 4px;
+    border-radius: 6px;
     padding: 18px;
     position: relative;
     overflow: hidden;
@@ -193,16 +244,23 @@
   }
 
   .card.live {
-    border-color: var(--live-dim);
-    box-shadow: 0 0 0 1px rgba(255,68,51,0.15), 0 8px 24px -12px rgba(255,68,51,0.3);
+    background: var(--bg-panel-live);
+    border-color: var(--line-live);
+    box-shadow: 0 0 0 1px rgba(255,122,26,0.1), 0 10px 28px -14px rgba(255,122,26,0.45);
   }
 
   .card.live::before {
-    content: "";
+    content: "ON AIR";
     position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
+    top: 0; right: 0;
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--bg);
     background: var(--live);
+    padding: 3px 8px 2px;
+    border-radius: 0 6px 0 6px;
   }
 
   .card-top {
@@ -213,10 +271,10 @@
   }
 
   .avatar {
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
-    background: #1c2024;
+    background: #2a231c;
     background-size: cover;
     background-position: center;
     flex-shrink: 0;
@@ -226,7 +284,7 @@
     font-family: 'IBM Plex Mono', monospace;
     font-weight: 600;
     color: var(--text-dim);
-    border: 1px solid var(--line);
+    border: 2px solid var(--line);
   }
 
   .card.live .avatar { border-color: var(--live); }
@@ -234,7 +292,7 @@
   .who { min-width: 0; }
 
   .username {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 15px;
     white-space: nowrap;
     overflow: hidden;
@@ -248,14 +306,14 @@
     font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
     color: var(--text-dim);
-    margin-top: 2px;
+    margin-top: 3px;
   }
 
   .dot {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: #3a4046;
+    background: #4a4136;
     flex-shrink: 0;
   }
 
@@ -267,8 +325,8 @@
   .card.live .status-line { color: var(--live); font-weight: 500; }
 
   @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(255,68,51,0.55); }
-    50% { box-shadow: 0 0 0 5px rgba(255,68,51,0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,122,26,0.55); }
+    50% { box-shadow: 0 0 0 5px rgba(255,122,26,0); }
   }
 
   .title-text {
@@ -280,6 +338,18 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
     min-height: 18px;
+  }
+
+  .stale-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    background: rgba(255, 200, 87, 0.1);
+    border: 1px solid rgba(255, 200, 87, 0.3);
+    padding: 4px 8px;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    cursor: help;
   }
 
   .card-bottom {
@@ -294,7 +364,7 @@
   .viewers {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 13px;
-    color: var(--signal);
+    color: var(--gold);
     font-weight: 600;
   }
 
@@ -307,8 +377,9 @@
     text-decoration: none;
     letter-spacing: 0.03em;
     border-bottom: 1px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
   }
-  a.open-link:hover { color: var(--text); border-color: var(--text-dim); }
+  a.open-link:hover { color: var(--live); border-color: var(--live); }
 
   .empty {
     text-align: center;
@@ -330,6 +401,7 @@
     .topbar { padding: 20px; }
     main { padding: 20px 20px 40px; }
     .stat-row { gap: 18px; }
+    .brand h1 { font-size: 24px; }
   }
 </style>
 </head>
@@ -337,12 +409,15 @@
 
 <div class="topbar">
   <div class="brand">
-    <h1>Live Monitor</h1>
-    <span class="tag">Kompetitor · TikTok</span>
+    <span class="airbox">● REC</span>
+    <div class="brand-text">
+      <h1>Live Monitor</h1>
+      <span class="tag">Kompetitor · TikTok</span>
+    </div>
   </div>
   <div class="stat-row">
     <div class="stat on-air">
-      <span class="num" id="stat-live">–</span>
+      <span class="num"><span id="stat-live">–</span><span class="eq" id="eq"><span></span><span></span><span></span><span></span></span></span>
       <span class="label">Sedang Live</span>
     </div>
     <div class="stat">
@@ -388,6 +463,7 @@
   const refreshBtn = document.getElementById('refresh');
   const filterButtons = document.querySelectorAll('.filter-btn');
   const searchInput = document.getElementById('search-input');
+  const eq = document.getElementById('eq');
 
   let allAccounts = [];       // data mentah terakhir dari backend
   let currentRegion = 'all';  // filter aktif: all | jogja | luar_jogja
@@ -420,6 +496,18 @@
     const avatarContent = acc.avatar_url ? '' : initials(acc.username);
     const viewers = formatViewers(acc.viewer_count);
 
+    // Deteksi "data usang": kalau percobaan terakhir (last_attempt) lebih
+    // dari 5 menit setelah pengecekan terakhir yang BERHASIL (last_checked),
+    // berarti sistem sedang gagal berulang untuk akun ini -- status yang
+    // ditampilkan mungkin sudah tidak akurat.
+    let isStale = false;
+    if (acc.last_attempt && acc.last_checked) {
+      const gapMs = new Date(acc.last_attempt) - new Date(acc.last_checked);
+      isStale = gapMs > 5 * 60 * 1000;
+    } else if (acc.last_attempt && !acc.last_checked) {
+      isStale = true; // belum pernah berhasil dicek sama sekali
+    }
+
     return `
       <div class="card ${isLive ? 'live' : ''}">
         <div class="card-top">
@@ -432,6 +520,7 @@
             </div>
           </div>
         </div>
+        ${isStale ? `<div class="stale-badge" title="${acc.last_error || 'Gagal dicek berulang kali'}">⚠ Data mungkin usang · gagal dicek ${timeAgo(acc.last_attempt)}</div>` : ''}
         ${isLive ? `<div class="title-text">${acc.title || 'Tanpa judul'}</div>` : `<div class="title-text"></div>`}
         <div class="card-bottom">
           <div class="viewers">
