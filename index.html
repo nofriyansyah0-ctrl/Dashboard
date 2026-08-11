@@ -102,7 +102,35 @@
   button#refresh:hover { border-color: var(--text-dim); background: rgba(255,255,255,0.03); }
   button#refresh:disabled { opacity: 0.5; cursor: default; }
 
-  main { padding: 32px 40px 60px; }
+  main { padding: 24px 40px 60px; }
+
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .filter-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover { border-color: var(--text-dim); color: var(--text); }
+
+  .filter-btn.active {
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
+    font-weight: 600;
+  }
 
   .grid {
     display: grid;
@@ -286,6 +314,11 @@
 </div>
 
 <main>
+  <div class="filter-row">
+    <button class="filter-btn active" data-region="all">Semua</button>
+    <button class="filter-btn" data-region="jogja">Jogja</button>
+    <button class="filter-btn" data-region="luar_jogja">Luar Jogja</button>
+  </div>
   <div class="grid" id="grid">
     <div class="empty">Memuat data akun…</div>
   </div>
@@ -302,6 +335,10 @@
   const statTotal = document.getElementById('stat-total');
   const statUpdated = document.getElementById('stat-updated');
   const refreshBtn = document.getElementById('refresh');
+  const filterButtons = document.querySelectorAll('.filter-btn');
+
+  let allAccounts = [];       // data mentah terakhir dari backend
+  let currentRegion = 'all';  // filter aktif: all | jogja | luar_jogja
 
   function initials(name) {
     return name.slice(0, 2).toUpperCase();
@@ -353,23 +390,38 @@
     `;
   }
 
+  function applyFilterAndRender() {
+    const filtered = currentRegion === 'all'
+      ? allAccounts
+      : allAccounts.filter(a => a.region === currentRegion);
+
+    if (filtered.length === 0) {
+      grid.innerHTML = '<div class="empty">Tidak ada akun untuk filter ini.</div>';
+    } else {
+      grid.innerHTML = filtered.map(renderCard).join('');
+    }
+
+    const liveCount = filtered.filter(a => a.is_live).length;
+    statLive.textContent = liveCount;
+    statTotal.textContent = filtered.length;
+  }
+
   async function loadStatus() {
     refreshBtn.disabled = true;
     refreshBtn.textContent = '↻ Memuat…';
     try {
       const res = await fetch(`${API_BASE}/api/status`);
       const data = await res.json();
-      const accounts = data.accounts || [];
+      allAccounts = data.accounts || [];
 
-      if (accounts.length === 0) {
+      if (allAccounts.length === 0) {
         grid.innerHTML = '<div class="empty">Belum ada data. Menunggu pengecekan pertama…</div>';
+        statLive.textContent = 0;
+        statTotal.textContent = 0;
       } else {
-        grid.innerHTML = accounts.map(renderCard).join('');
+        applyFilterAndRender();
       }
 
-      const liveCount = accounts.filter(a => a.is_live).length;
-      statLive.textContent = liveCount;
-      statTotal.textContent = accounts.length;
       statUpdated.textContent = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     } catch (err) {
       grid.innerHTML = `<div class="empty">Gagal memuat data. Pastikan backend aktif di ${API_BASE}.<br><br>(${err.message})</div>`;
@@ -378,6 +430,15 @@
       refreshBtn.textContent = '↻ Refresh';
     }
   }
+
+  filterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentRegion = btn.dataset.region;
+      applyFilterAndRender();
+    });
+  });
 
   refreshBtn.addEventListener('click', loadStatus);
   loadStatus();
