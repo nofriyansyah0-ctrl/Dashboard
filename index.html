@@ -153,6 +153,34 @@
 
   main { padding: 24px 40px 60px; }
 
+  .view-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .view-tab {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 10px 4px;
+    margin-right: 24px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .view-tab:hover { color: var(--text); }
+
+  .view-tab.active {
+    color: var(--live);
+    border-color: var(--live);
+  }
+
   .filter-row {
     display: flex;
     gap: 8px;
@@ -397,6 +425,95 @@
     text-align: center;
   }
 
+  /* ---------- Leaderboard table ---------- */
+
+  .lb-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .lb-table thead th {
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .lb-table thead th.num-col { text-align: right; }
+
+  .lb-table tbody tr {
+    border-bottom: 1px solid var(--line);
+    transition: background 0.15s;
+  }
+
+  .lb-table tbody tr:hover { background: var(--bg-panel); }
+
+  .lb-table td {
+    padding: 12px;
+    font-size: 13px;
+    vertical-align: middle;
+  }
+
+  .lb-table td.num-col {
+    text-align: right;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .lb-rank {
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--text-dim);
+    width: 30px;
+  }
+
+  .lb-rank.top1 { color: var(--gold); }
+  .lb-rank.top2 { color: var(--text); }
+  .lb-rank.top3 { color: var(--live); }
+
+  .lb-account {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .lb-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #2a231c;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    border: 1px solid var(--line);
+  }
+
+  .lb-region-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .lb-sessions {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--live);
+    font-weight: 600;
+  }
+
+  .lb-viewers { color: var(--gold); }
+
   @media (max-width: 600px) {
     .topbar { padding: 20px; }
     main { padding: 20px 20px 40px; }
@@ -433,22 +550,43 @@
 </div>
 
 <main>
-  <div class="filter-row">
-    <button class="filter-btn active" data-region="all">Semua</button>
-    <button class="filter-btn" data-region="jogja">Jogja</button>
-    <button class="filter-btn" data-region="luar_jogja">Luar Jogja</button>
-    <div class="search-box">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-      <input type="text" id="search-input" placeholder="Cari akun…" autocomplete="off">
+  <div class="view-tabs">
+    <button class="view-tab active" data-view="live">Live Sekarang</button>
+    <button class="view-tab" data-view="leaderboard">Leaderboard</button>
+  </div>
+
+  <div id="view-live">
+    <div class="filter-row">
+      <button class="filter-btn active" data-region="all">Semua</button>
+      <button class="filter-btn" data-region="jogja">Jogja</button>
+      <button class="filter-btn" data-region="luar_jogja">Luar Jogja</button>
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="search-input" placeholder="Cari akun…" autocomplete="off">
+      </div>
     </div>
+    <div class="grid" id="grid">
+      <div class="empty">Memuat data akun…</div>
+    </div>
+    <div class="footer-note">Auto-refresh tiap 30 detik · Data diambil dari status live TikTok tiap akun</div>
   </div>
-  <div class="grid" id="grid">
-    <div class="empty">Memuat data akun…</div>
+
+  <div id="view-leaderboard" style="display:none;">
+    <div class="filter-row">
+      <button class="filter-btn active" data-days="7">7 Hari</button>
+      <button class="filter-btn" data-days="30">30 Hari</button>
+      <button class="filter-btn active" data-lb-region="all" style="margin-left:auto;">Semua</button>
+      <button class="filter-btn" data-lb-region="jogja">Jogja</button>
+      <button class="filter-btn" data-lb-region="luar_jogja">Luar Jogja</button>
+    </div>
+    <div id="leaderboard-wrap">
+      <div class="empty">Memuat leaderboard…</div>
+    </div>
+    <div class="footer-note">Ranking berdasarkan jumlah sesi live & rata-rata penonton</div>
   </div>
-  <div class="footer-note">Auto-refresh tiap 30 detik · Data diambil dari status live TikTok tiap akun</div>
 </main>
 
 <script>
@@ -461,7 +599,7 @@
   const statTotal = document.getElementById('stat-total');
   const statUpdated = document.getElementById('stat-updated');
   const refreshBtn = document.getElementById('refresh');
-  const filterButtons = document.querySelectorAll('.filter-btn');
+  const filterButtons = document.querySelectorAll('#view-live .filter-btn');
   const searchInput = document.getElementById('search-input');
   const eq = document.getElementById('eq');
 
@@ -594,6 +732,112 @@
   refreshBtn.addEventListener('click', loadStatus);
   loadStatus();
   setInterval(loadStatus, 30000);
+
+  // ================== VIEW TABS (Live / Leaderboard) ==================
+
+  const viewTabs = document.querySelectorAll('.view-tab');
+  const viewLive = document.getElementById('view-live');
+  const viewLeaderboard = document.getElementById('view-leaderboard');
+
+  viewTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      viewTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const view = tab.dataset.view;
+      viewLive.style.display = view === 'live' ? '' : 'none';
+      viewLeaderboard.style.display = view === 'leaderboard' ? '' : 'none';
+      if (view === 'leaderboard') loadLeaderboard();
+    });
+  });
+
+  // ================== LEADERBOARD ==================
+
+  const leaderboardWrap = document.getElementById('leaderboard-wrap');
+  const dayButtons = document.querySelectorAll('#view-leaderboard [data-days]');
+  const lbRegionButtons = document.querySelectorAll('#view-leaderboard [data-lb-region]');
+
+  let currentDays = 7;
+  let currentLbRegion = 'all';
+
+  function renderLeaderboardRow(entry, rank) {
+    const avatarStyle = entry.avatar_url ? `style="background-image:url('${entry.avatar_url}')"` : '';
+    const avatarContent = entry.avatar_url ? '' : initials(entry.username);
+    const rankClass = rank === 1 ? 'top1' : rank === 2 ? 'top2' : rank === 3 ? 'top3' : '';
+    const regionLabel = entry.region === 'jogja' ? 'Jogja' : 'Luar Jogja';
+    const avgViewers = entry.avg_viewers !== null ? entry.avg_viewers : '–';
+    const maxViewers = entry.max_viewers !== null ? entry.max_viewers : '–';
+
+    return `
+      <tr>
+        <td class="lb-rank ${rankClass}">${rank}</td>
+        <td>
+          <div class="lb-account">
+            <div class="lb-avatar" ${avatarStyle}>${avatarContent}</div>
+            <div>
+              <div class="username">@${entry.username}</div>
+              <div class="lb-region-tag">${regionLabel}</div>
+            </div>
+          </div>
+        </td>
+        <td class="num-col lb-sessions">${entry.session_count}×</td>
+        <td class="num-col lb-viewers">${avgViewers}</td>
+        <td class="num-col lb-viewers">${maxViewers}</td>
+        <td class="num-col" style="color:var(--text-dim); font-family:'IBM Plex Mono',monospace; font-size:11px;">${timeAgo(entry.last_live_at)}</td>
+      </tr>
+    `;
+  }
+
+  async function loadLeaderboard() {
+    leaderboardWrap.innerHTML = '<div class="empty">Memuat leaderboard…</div>';
+    try {
+      const res = await fetch(`${API_BASE}/api/leaderboard?days=${currentDays}&region=${currentLbRegion}`);
+      const data = await res.json();
+      const entries = data.leaderboard || [];
+
+      if (entries.length === 0) {
+        leaderboardWrap.innerHTML = '<div class="empty">Belum ada data live tercatat untuk rentang ini.</div>';
+        return;
+      }
+
+      leaderboardWrap.innerHTML = `
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Akun</th>
+              <th class="num-col">Sesi Live</th>
+              <th class="num-col">Rata² Penonton</th>
+              <th class="num-col">Penonton Tertinggi</th>
+              <th class="num-col">Terakhir Live</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${entries.map((e, i) => renderLeaderboardRow(e, i + 1)).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch (err) {
+      leaderboardWrap.innerHTML = `<div class="empty">Gagal memuat leaderboard. (${err.message})</div>`;
+    }
+  }
+
+  dayButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      dayButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentDays = parseInt(btn.dataset.days, 10);
+      loadLeaderboard();
+    });
+  });
+
+  lbRegionButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      lbRegionButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentLbRegion = btn.dataset.lbRegion;
+      loadLeaderboard();
+    });
+  });
 </script>
 
 </body>
