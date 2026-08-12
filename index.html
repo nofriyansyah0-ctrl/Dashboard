@@ -268,8 +268,11 @@
     padding: 18px;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
     transition: border-color 0.2s, transform 0.15s;
   }
+
+  .card:hover { border-color: var(--live); transform: translateY(-1px); }
 
   .card.live {
     background: var(--bg-panel-live);
@@ -514,6 +517,277 @@
 
   .lb-viewers { color: var(--gold); }
 
+  /* ---------- Heatmap ---------- */
+
+  .heatmap-scroll {
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: 50px repeat(24, minmax(26px, 1fr));
+    gap: 3px;
+    min-width: 700px;
+  }
+
+  .hm-corner { }
+
+  .hm-hour-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    text-align: center;
+    padding-bottom: 4px;
+  }
+
+  .hm-day-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    padding-right: 6px;
+  }
+
+  .hm-cell {
+    aspect-ratio: 1;
+    border-radius: 3px;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    cursor: default;
+    transition: transform 0.1s;
+  }
+
+  .hm-cell:hover { transform: scale(1.15); border-color: var(--live); }
+
+  .heatmap-legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  .heatmap-legend .hm-cell { width: 14px; height: 14px; cursor: default; }
+  .heatmap-legend .hm-cell:hover { transform: none; border-color: var(--line); }
+
+  /* ---------- Detail panel (riwayat live per akun) ---------- */
+
+  .detail-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 100;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 60px 20px;
+    overflow-y: auto;
+  }
+
+  .detail-overlay.open { display: flex; }
+
+  .detail-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    max-width: 640px;
+    width: 100%;
+    padding: 28px;
+    position: relative;
+  }
+
+  .detail-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.15s;
+  }
+  .detail-close:hover { border-color: var(--live); color: var(--live); }
+
+  .detail-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-right: 30px;
+  }
+
+  .detail-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #2a231c;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    color: var(--text-dim);
+    border: 2px solid var(--line);
+  }
+
+  .detail-title {
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 800;
+    font-size: 24px;
+  }
+
+  .detail-subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .detail-section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 20px 0 10px;
+  }
+
+  .history-item {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+
+  .history-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+
+  .history-date {
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  .history-time {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .history-stats {
+    display: flex;
+    gap: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+  }
+
+  .history-stats .stat-item { display: flex; flex-direction: column; gap: 2px; }
+  .history-stats .stat-item .v { color: var(--gold); font-weight: 600; font-size: 14px; }
+  .history-stats .stat-item .l { color: var(--text-dim); font-size: 9px; text-transform: uppercase; }
+
+  .history-live-badge {
+    display: inline-block;
+    background: var(--live);
+    color: var(--bg);
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 800;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ---------- Viewer trend chart (di dalam detail panel) ---------- */
+
+  .trend-chart-wrap {
+    margin-bottom: 8px;
+  }
+
+  .trend-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .trend-stat {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+
+  .trend-stat .v {
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--gold);
+  }
+
+  .trend-stat .v.growth-up { color: var(--cool); }
+  .trend-stat .v.growth-down { color: var(--live); }
+
+  .trend-stat .l {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* ---------- Insight cards ---------- */
+
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+  }
+
+  .insight-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--insight-color, var(--live));
+    border-radius: 6px;
+    padding: 18px;
+  }
+
+  .insight-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--insight-color, var(--live));
+  }
+
+  .insight-card-body {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .insight-card-body b { color: var(--gold); }
+  .insight-card-body .pct-up { color: var(--cool); font-weight: 600; }
+  .insight-card-body .pct-down { color: var(--live); font-weight: 600; }
+
   @media (max-width: 600px) {
     .topbar { padding: 20px; }
     main { padding: 20px 20px 40px; }
@@ -553,6 +827,8 @@
   <div class="view-tabs">
     <button class="view-tab active" data-view="live">Live Sekarang</button>
     <button class="view-tab" data-view="leaderboard">Leaderboard</button>
+    <button class="view-tab" data-view="heatmap">Jam Favorit</button>
+    <button class="view-tab" data-view="insight">Insight Otomatis</button>
   </div>
 
   <div id="view-live">
@@ -587,7 +863,37 @@
     </div>
     <div class="footer-note">Ranking berdasarkan jumlah sesi live & rata-rata penonton</div>
   </div>
+
+  <div id="view-heatmap" style="display:none;">
+    <div class="filter-row">
+      <button class="filter-btn active" data-hm-days="7">7 Hari</button>
+      <button class="filter-btn" data-hm-days="30">30 Hari</button>
+      <button class="filter-btn active" data-hm-region="all" style="margin-left:auto;">Semua</button>
+      <button class="filter-btn" data-hm-region="jogja">Jogja</button>
+      <button class="filter-btn" data-hm-region="luar_jogja">Luar Jogja</button>
+    </div>
+    <div id="heatmap-wrap">
+      <div class="empty">Memuat heatmap…</div>
+    </div>
+    <div class="footer-note">Waktu ditampilkan dalam WIB · Warna makin gelap = makin sering live di jam itu</div>
+  </div>
+
+  <div id="view-insight" style="display:none;">
+    <div id="insight-wrap">
+      <div class="empty">Memuat insight…</div>
+    </div>
+    <div class="footer-note">Insight dihitung otomatis dari data yang tersimpan (bukan hasil AI generatif)</div>
+  </div>
 </main>
+
+<div id="detail-overlay" class="detail-overlay" onclick="if(event.target===this) closeAccountDetail()">
+  <div class="detail-panel">
+    <button class="detail-close" onclick="closeAccountDetail()">✕</button>
+    <div id="detail-content">
+      <div class="empty">Memuat riwayat…</div>
+    </div>
+  </div>
+</div>
 
 <script>
   // Ganti dengan URL backend Railway kamu, misal:
@@ -647,7 +953,7 @@
     }
 
     return `
-      <div class="card ${isLive ? 'live' : ''}">
+      <div class="card ${isLive ? 'live' : ''}" onclick="openAccountDetail('${acc.username}')">
         <div class="card-top">
           <div class="avatar" ${avatarStyle}>${avatarContent}</div>
           <div class="who">
@@ -664,7 +970,7 @@
           <div class="viewers">
             ${isLive && viewers ? viewers + '<span class="label">penonton</span>' : ''}
           </div>
-          <a class="open-link" href="https://www.tiktok.com/@${acc.username}/live" target="_blank" rel="noopener">Buka →</a>
+          <a class="open-link" href="https://www.tiktok.com/@${acc.username}/live" target="_blank" rel="noopener" onclick="event.stopPropagation()">Buka →</a>
         </div>
       </div>
     `;
@@ -733,11 +1039,13 @@
   loadStatus();
   setInterval(loadStatus, 30000);
 
-  // ================== VIEW TABS (Live / Leaderboard) ==================
+  // ================== VIEW TABS (Live / Leaderboard / Heatmap / Insight) ==================
 
   const viewTabs = document.querySelectorAll('.view-tab');
   const viewLive = document.getElementById('view-live');
   const viewLeaderboard = document.getElementById('view-leaderboard');
+  const viewHeatmap = document.getElementById('view-heatmap');
+  const viewInsight = document.getElementById('view-insight');
 
   viewTabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -746,7 +1054,11 @@
       const view = tab.dataset.view;
       viewLive.style.display = view === 'live' ? '' : 'none';
       viewLeaderboard.style.display = view === 'leaderboard' ? '' : 'none';
+      viewHeatmap.style.display = view === 'heatmap' ? '' : 'none';
+      viewInsight.style.display = view === 'insight' ? '' : 'none';
       if (view === 'leaderboard') loadLeaderboard();
+      if (view === 'heatmap') loadHeatmap();
+      if (view === 'insight') loadInsights();
     });
   });
 
@@ -768,7 +1080,7 @@
     const maxViewers = entry.max_viewers !== null ? entry.max_viewers : '–';
 
     return `
-      <tr>
+      <tr onclick="openAccountDetail('${entry.username}')" style="cursor:pointer;">
         <td class="lb-rank ${rankClass}">${rank}</td>
         <td>
           <div class="lb-account">
@@ -838,6 +1150,342 @@
       loadLeaderboard();
     });
   });
+
+  // ================== HEATMAP ==================
+
+  const heatmapWrap = document.getElementById('heatmap-wrap');
+  const hmDayButtons = document.querySelectorAll('#view-heatmap [data-hm-days]');
+  const hmRegionButtons = document.querySelectorAll('#view-heatmap [data-hm-region]');
+
+  let currentHmDays = 7;
+  let currentHmRegion = 'all';
+
+  const DAY_LABELS = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+
+  // Warna sel berdasarkan intensitas (0 -> abu gelap, makin tinggi -> makin oranye terang)
+  function heatColor(count, maxCount) {
+    if (count === 0) return 'var(--bg-panel)';
+    const ratio = maxCount > 0 ? count / maxCount : 0;
+    // interpolasi dari oranye redup ke oranye terang (var(--live) = #ff7a1a)
+    const alpha = 0.15 + ratio * 0.85;
+    return `rgba(255, 122, 26, ${alpha.toFixed(2)})`;
+  }
+
+  function renderHeatmap(cells) {
+    const maxCount = Math.max(...cells.map(c => c.count), 1);
+
+    // Susun ke lookup (day, hour) -> count untuk akses cepat
+    const lookup = {};
+    cells.forEach(c => { lookup[`${c.day}-${c.hour}`] = c.count; });
+
+    let html = '<div class="heatmap-scroll"><div class="heatmap-grid">';
+
+    // Baris header jam (0-23)
+    html += '<div class="hm-corner"></div>';
+    for (let h = 0; h < 24; h++) {
+      html += `<div class="hm-hour-label">${h}</div>`;
+    }
+
+    // 7 baris hari, masing-masing 24 sel jam
+    for (let d = 0; d < 7; d++) {
+      html += `<div class="hm-day-label">${DAY_LABELS[d]}</div>`;
+      for (let h = 0; h < 24; h++) {
+        const count = lookup[`${d}-${h}`] || 0;
+        const color = heatColor(count, maxCount);
+        const title = `${DAY_LABELS[d]} jam ${h}:00 WIB — ${count} sesi live`;
+        html += `<div class="hm-cell" style="background:${color}" title="${title}"></div>`;
+      }
+    }
+
+    html += '</div></div>';
+
+    html += `
+      <div class="heatmap-legend">
+        <span>Sepi</span>
+        <div class="hm-cell" style="background:${heatColor(0, maxCount)}"></div>
+        <div class="hm-cell" style="background:${heatColor(maxCount * 0.25, maxCount)}"></div>
+        <div class="hm-cell" style="background:${heatColor(maxCount * 0.5, maxCount)}"></div>
+        <div class="hm-cell" style="background:${heatColor(maxCount * 0.75, maxCount)}"></div>
+        <div class="hm-cell" style="background:${heatColor(maxCount, maxCount)}"></div>
+        <span>Ramai (maks ${maxCount} sesi)</span>
+      </div>
+    `;
+
+    heatmapWrap.innerHTML = html;
+  }
+
+  async function loadHeatmap() {
+    heatmapWrap.innerHTML = '<div class="empty">Memuat heatmap…</div>';
+    try {
+      const res = await fetch(`${API_BASE}/api/heatmap?days=${currentHmDays}&region=${currentHmRegion}`);
+      const data = await res.json();
+      const cells = data.heatmap || [];
+
+      const totalSessions = cells.reduce((sum, c) => sum + c.count, 0);
+      if (totalSessions === 0) {
+        heatmapWrap.innerHTML = '<div class="empty">Belum ada data live tercatat untuk rentang ini.</div>';
+        return;
+      }
+
+      renderHeatmap(cells);
+    } catch (err) {
+      heatmapWrap.innerHTML = `<div class="empty">Gagal memuat heatmap. (${err.message})</div>`;
+    }
+  }
+
+  hmDayButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      hmDayButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentHmDays = parseInt(btn.dataset.hmDays, 10);
+      loadHeatmap();
+    });
+  });
+
+  hmRegionButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      hmRegionButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentHmRegion = btn.dataset.hmRegion;
+      loadHeatmap();
+    });
+  });
+
+  // ================== DETAIL PANEL (Riwayat Live per Akun) ==================
+
+  const detailOverlay = document.getElementById('detail-overlay');
+  const detailContent = document.getElementById('detail-content');
+
+  function formatDurationMinutes(startedAt, endedAt) {
+    if (!startedAt) return '–';
+    const start = new Date(startedAt);
+    const end = endedAt ? new Date(endedAt) : new Date(); // masih live -> hitung sampai sekarang
+    const mins = Math.round((end - start) / 60000);
+    if (mins < 60) return `${mins} menit`;
+    const hrs = Math.floor(mins / 60);
+    const rem = mins % 60;
+    return `${hrs} jam ${rem > 0 ? rem + ' menit' : ''}`.trim();
+  }
+
+  function formatDateID(isoString) {
+    if (!isoString) return '–';
+    return new Date(isoString).toLocaleDateString('id-ID', {
+      day: 'numeric', month: 'short', year: 'numeric'
+    });
+  }
+
+  function formatTimeRangeID(startedAt, endedAt) {
+    const opts = { hour: '2-digit', minute: '2-digit' };
+    const start = new Date(startedAt).toLocaleTimeString('id-ID', opts);
+    const end = endedAt ? new Date(endedAt).toLocaleTimeString('id-ID', opts) : 'sekarang';
+    return `${start} – ${end}`;
+  }
+
+  function renderHistoryItem(item) {
+    const stillLive = !item.ended_at;
+    return `
+      <div class="history-item">
+        <div class="history-item-top">
+          <div>
+            <span class="history-date">${formatDateID(item.started_at)}</span>
+            ${stillLive ? '<span class="history-live-badge">LIVE</span>' : ''}
+          </div>
+          <div class="history-time">${formatTimeRangeID(item.started_at, item.ended_at)}</div>
+        </div>
+        ${item.title ? `<div style="font-size:12px; color:var(--text-dim); margin-bottom:8px;">${item.title}</div>` : ''}
+        <div class="history-stats">
+          <div class="stat-item">
+            <span class="v">${item.peak_viewer_count ?? '–'}</span>
+            <span class="l">Peak Viewers</span>
+          </div>
+          <div class="stat-item">
+            <span class="v">${formatDurationMinutes(item.started_at, item.ended_at)}</span>
+            <span class="l">Durasi</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function openAccountDetail(username) {
+    detailOverlay.classList.add('open');
+    detailContent.innerHTML = '<div class="empty">Memuat riwayat…</div>';
+
+    // Ambil avatar dari data yang sudah ada di memori (allAccounts) kalau ada
+    const known = allAccounts.find(a => a.username === username);
+    const avatarStyle = known?.avatar_url ? `style="background-image:url('${known.avatar_url}')"` : '';
+    const avatarContent = known?.avatar_url ? '' : initials(username);
+
+    try {
+      const [historyRes, trendRes] = await Promise.all([
+        fetch(`${API_BASE}/api/history/${username}?limit=15`),
+        fetch(`${API_BASE}/api/viewer-trend/${username}`)
+      ]);
+      if (!historyRes.ok) throw new Error('Gagal mengambil riwayat');
+      const data = await historyRes.json();
+      const history = data.history || [];
+      const trend = trendRes.ok ? await trendRes.json() : { session: null, snapshots: [] };
+
+      const headerHtml = `
+        <div class="detail-header">
+          <div class="detail-avatar" ${avatarStyle}>${avatarContent}</div>
+          <div>
+            <div class="detail-title">@${username}</div>
+            <div class="detail-subtitle">${history.length} sesi live tercatat</div>
+          </div>
+        </div>
+      `;
+
+      const trendHtml = renderTrendSection(trend);
+
+      if (history.length === 0) {
+        detailContent.innerHTML = headerHtml + trendHtml + '<div class="empty">Belum ada riwayat live tercatat untuk akun ini.</div>';
+        return;
+      }
+
+      detailContent.innerHTML = headerHtml + trendHtml +
+        '<div class="detail-section-label">Riwayat Live Terbaru</div>' +
+        history.map(renderHistoryItem).join('');
+    } catch (err) {
+      detailContent.innerHTML = `<div class="empty">Gagal memuat riwayat. (${err.message})</div>`;
+    }
+  }
+
+  function renderTrendSection(trend) {
+    const snapshots = trend.snapshots || [];
+    if (snapshots.length < 2) return ''; // butuh minimal 2 titik untuk garis
+
+    const values = snapshots.map(s => s.viewer_count);
+    const current = values[values.length - 1];
+    const highest = Math.max(...values);
+    const lowest = Math.min(...values);
+    const avg = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
+    const first = values[0];
+    const growthPct = first > 0 ? Math.round(((current - first) / first) * 100) : 0;
+    const growthClass = growthPct > 0 ? 'growth-up' : growthPct < 0 ? 'growth-down' : '';
+    const growthSign = growthPct > 0 ? '+' : '';
+
+    // Bangun polyline SVG sederhana, viewBox 0 0 560 120
+    const W = 560, H = 120, PAD = 8;
+    const range = Math.max(highest - lowest, 1);
+    const points = values.map((v, i) => {
+      const x = PAD + (i / (values.length - 1)) * (W - PAD * 2);
+      const y = H - PAD - ((v - lowest) / range) * (H - PAD * 2);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+
+    const stillLive = trend.session && !trend.session.ended_at;
+
+    return `
+      <div class="detail-section-label">Viewer Trend ${stillLive ? '(Live Sekarang)' : '(Sesi Terakhir)'}</div>
+      <div class="trend-chart-wrap">
+        <svg viewBox="0 0 ${W} ${H}" style="width:100%; height:${H}px;">
+          <polyline points="${points}" fill="none" stroke="var(--live)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+        </svg>
+      </div>
+      <div class="trend-stats-row">
+        <div class="trend-stat"><div class="v">${current}</div><div class="l">Saat Ini</div></div>
+        <div class="trend-stat"><div class="v">${highest}</div><div class="l">Tertinggi</div></div>
+        <div class="trend-stat"><div class="v">${lowest}</div><div class="l">Terendah</div></div>
+        <div class="trend-stat"><div class="v ${growthClass}">${growthSign}${growthPct}%</div><div class="l">Pertumbuhan</div></div>
+      </div>
+    `;
+  }
+
+  function closeAccountDetail() {
+    detailOverlay.classList.remove('open');
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAccountDetail();
+  });
+
+  // ================== INSIGHT OTOMATIS ==================
+
+  const insightWrap = document.getElementById('insight-wrap');
+
+  function renderInsightCards(insights) {
+    const cards = [];
+
+    if (insights.top_performer) {
+      cards.push(`
+        <div class="insight-card" style="--insight-color: var(--cool);">
+          <div class="insight-card-header">📈 Performa Tertinggi</div>
+          <div class="insight-card-body">
+            <b>@${insights.top_performer.username}</b> sedang live dengan
+            <b>${insights.top_performer.viewer_count} penonton</b> — tertinggi saat ini
+            di antara semua akun yang sedang live.
+          </div>
+        </div>
+      `);
+    }
+
+    if (insights.viewer_spike) {
+      const s = insights.viewer_spike;
+      cards.push(`
+        <div class="insight-card" style="--insight-color: var(--gold);">
+          <div class="insight-card-header">⚡ Viewer Spike</div>
+          <div class="insight-card-body">
+            <b>@${s.username}</b> penontonnya naik dari ${s.from} ke ${s.to}
+            (<span class="pct-up">+${s.growth_pct}%</span>) dalam 20 menit terakhir.
+          </div>
+        </div>
+      `);
+    }
+
+    if (insights.optimal_time) {
+      const t = insights.optimal_time;
+      cards.push(`
+        <div class="insight-card" style="--insight-color: var(--live);">
+          <div class="insight-card-header">🕐 Waktu Optimal</div>
+          <div class="insight-card-body">
+            Kompetitor paling sering live pukul <b>${t.hour_range}</b>,
+            dengan ${t.session_count} sesi tercatat pada jam ini (7 hari terakhir).
+          </div>
+        </div>
+      `);
+    }
+
+    if (insights.popular_topic) {
+      const p = insights.popular_topic;
+      const diffText = p.diff_pct_vs_overall !== null
+        ? (p.diff_pct_vs_overall >= 0
+            ? `<span class="pct-up">+${p.diff_pct_vs_overall}%</span> lebih tinggi`
+            : `<span class="pct-down">${p.diff_pct_vs_overall}%</span> lebih rendah`)
+          + ' dibanding rata-rata judul lain'
+        : '';
+      cards.push(`
+        <div class="insight-card" style="--insight-color: #a78bfa;">
+          <div class="insight-card-header">💡 Topik Populer</div>
+          <div class="insight-card-body">
+            Kata <b>"${p.word}"</b> paling sering muncul di judul live (${p.mention_count}x).
+            Rata-rata penonton sesi dengan kata ini: <b>${p.avg_viewers_for_topic ?? '–'}</b>,
+            ${diffText}.
+          </div>
+        </div>
+      `);
+    }
+
+    return cards;
+  }
+
+  async function loadInsights() {
+    insightWrap.innerHTML = '<div class="empty">Memuat insight…</div>';
+    try {
+      const res = await fetch(`${API_BASE}/api/insights?days=7`);
+      const data = await res.json();
+      const cards = renderInsightCards(data.insights || {});
+
+      if (cards.length === 0) {
+        insightWrap.innerHTML = '<div class="empty">Belum cukup data untuk menghasilkan insight. Coba lagi setelah beberapa sesi live tercatat.</div>';
+        return;
+      }
+
+      insightWrap.innerHTML = `<div class="insight-grid">${cards.join('')}</div>`;
+    } catch (err) {
+      insightWrap.innerHTML = `<div class="empty">Gagal memuat insight. (${err.message})</div>`;
+    }
+  }
 </script>
 
 </body>
