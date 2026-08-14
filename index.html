@@ -843,6 +843,131 @@
   .insight-card-body .pct-up { color: var(--cool); font-weight: 600; }
   .insight-card-body .pct-down { color: var(--live); font-weight: 600; }
 
+  /* ---------- Kelola Akun ---------- */
+
+  .manage-form {
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+
+  .manage-form-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .manage-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .manage-field label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .manage-field input,
+  .manage-field select {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 4px;
+  }
+
+  .manage-field input:focus,
+  .manage-field select:focus {
+    outline: none;
+    border-color: var(--live);
+  }
+
+  .manage-add-btn {
+    background: var(--live);
+    border: none;
+    color: var(--bg);
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 11px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+  }
+  .manage-add-btn:hover { opacity: 0.9; }
+  .manage-add-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .manage-form-msg {
+    margin-top: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+  }
+  .manage-form-msg.success { color: var(--cool); }
+  .manage-form-msg.error { color: var(--live); }
+
+  .manage-list-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .manage-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+  }
+
+  .manage-row-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .manage-row-region {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 3px 8px;
+    border-radius: 3px;
+  }
+
+  .manage-delete-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .manage-delete-btn:hover { border-color: var(--live); color: var(--live); }
+  .manage-delete-btn:disabled { opacity: 0.5; cursor: default; }
+
   @media (max-width: 600px) {
     .topbar {
       grid-template-columns: 1fr;
@@ -894,6 +1019,7 @@
     <button class="view-tab" data-view="leaderboard">Leaderboard</button>
     <button class="view-tab" data-view="heatmap">Jam Favorit</button>
     <button class="view-tab" data-view="insight">Insight Otomatis</button>
+    <button class="view-tab" data-view="manage">Kelola Akun</button>
   </div>
 
   <div id="view-live">
@@ -949,6 +1075,40 @@
       <div class="empty">Memuat insight…</div>
     </div>
     <div class="footer-note">Insight dihitung otomatis dari data yang tersimpan (bukan hasil AI generatif)</div>
+  </div>
+
+  <div id="view-manage" style="display:none;">
+    <div class="manage-form">
+      <div class="manage-form-row">
+        <div class="manage-field">
+          <label for="new-username">Username TikTok</label>
+          <input type="text" id="new-username" placeholder="misal: kampus_kompetitor (tanpa @)" autocomplete="off">
+        </div>
+        <div class="manage-field" style="max-width:180px;">
+          <label for="new-region">Region</label>
+          <select id="new-region">
+            <option value="jogja">Jogja</option>
+            <option value="luar_jogja">Luar Jogja</option>
+          </select>
+        </div>
+        <button id="add-account-btn" class="manage-add-btn">+ Tambah Akun</button>
+      </div>
+      <div id="manage-form-msg" class="manage-form-msg"></div>
+    </div>
+
+    <div class="manage-list-header">
+      <span id="manage-total-count">Memuat…</span>
+      <div class="search-box" style="margin-left:auto;">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="manage-search-input" placeholder="Cari akun…" autocomplete="off">
+      </div>
+    </div>
+    <div id="manage-list-wrap">
+      <div class="empty">Memuat daftar akun…</div>
+    </div>
   </div>
 </main>
 
@@ -1161,13 +1321,14 @@
   loadStatus();
   setInterval(loadStatus, 30000);
 
-  // ================== VIEW TABS (Live / Leaderboard / Heatmap / Insight) ==================
+  // ================== VIEW TABS (Live / Leaderboard / Heatmap / Insight / Kelola) ==================
 
   const viewTabs = document.querySelectorAll('.view-tab');
   const viewLive = document.getElementById('view-live');
   const viewLeaderboard = document.getElementById('view-leaderboard');
   const viewHeatmap = document.getElementById('view-heatmap');
   const viewInsight = document.getElementById('view-insight');
+  const viewManage = document.getElementById('view-manage');
 
   viewTabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -1178,9 +1339,11 @@
       viewLeaderboard.style.display = view === 'leaderboard' ? '' : 'none';
       viewHeatmap.style.display = view === 'heatmap' ? '' : 'none';
       viewInsight.style.display = view === 'insight' ? '' : 'none';
+      viewManage.style.display = view === 'manage' ? '' : 'none';
       if (view === 'leaderboard') loadLeaderboard();
       if (view === 'heatmap') loadHeatmap();
       if (view === 'insight') loadInsights();
+      if (view === 'manage') loadManageList();
     });
   });
 
@@ -1608,6 +1771,121 @@
       insightWrap.innerHTML = `<div class="empty">Gagal memuat insight. (${err.message})</div>`;
     }
   }
+
+  // ================== KELOLA AKUN ==================
+
+  const newUsernameInput = document.getElementById('new-username');
+  const newRegionSelect = document.getElementById('new-region');
+  const addAccountBtn = document.getElementById('add-account-btn');
+  const manageFormMsg = document.getElementById('manage-form-msg');
+  const manageListWrap = document.getElementById('manage-list-wrap');
+  const manageTotalCount = document.getElementById('manage-total-count');
+  const manageSearchInput = document.getElementById('manage-search-input');
+
+  let manageAccountsCache = [];
+  let manageSearchTerm = '';
+
+  function renderManageList() {
+    let filtered = manageAccountsCache;
+    if (manageSearchTerm) {
+      filtered = filtered.filter(a => a.username.toLowerCase().includes(manageSearchTerm));
+    }
+
+    manageTotalCount.textContent = `${manageAccountsCache.length} akun dipantau`;
+
+    if (filtered.length === 0) {
+      manageListWrap.innerHTML = '<div class="empty">Tidak ada akun yang cocok.</div>';
+      return;
+    }
+
+    manageListWrap.innerHTML = filtered.map(acc => `
+      <div class="manage-row">
+        <div class="manage-row-left">
+          <span class="username">@${acc.username}</span>
+          <span class="manage-row-region">${acc.region === 'jogja' ? 'Jogja' : 'Luar Jogja'}</span>
+        </div>
+        <button class="manage-delete-btn" onclick="deleteManagedAccount('${acc.username}')">Hapus</button>
+      </div>
+    `).join('');
+  }
+
+  async function loadManageList() {
+    manageListWrap.innerHTML = '<div class="empty">Memuat daftar akun…</div>';
+    try {
+      const res = await fetch(`${API_BASE}/api/accounts`);
+      const data = await res.json();
+      manageAccountsCache = (data.accounts || []).sort((a, b) => a.username.localeCompare(b.username));
+      renderManageList();
+    } catch (err) {
+      manageListWrap.innerHTML = `<div class="empty">Gagal memuat daftar akun. (${err.message})</div>`;
+    }
+  }
+
+  function showManageMsg(text, isError) {
+    manageFormMsg.textContent = text;
+    manageFormMsg.className = 'manage-form-msg ' + (isError ? 'error' : 'success');
+    setTimeout(() => { manageFormMsg.textContent = ''; manageFormMsg.className = 'manage-form-msg'; }, 4000);
+  }
+
+  async function addManagedAccount() {
+    const username = newUsernameInput.value.trim();
+    const region = newRegionSelect.value;
+
+    if (!username) {
+      showManageMsg('Isi username dulu.', true);
+      return;
+    }
+
+    addAccountBtn.disabled = true;
+    addAccountBtn.textContent = 'Menambahkan…';
+    try {
+      const res = await fetch(`${API_BASE}/api/accounts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, region })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        const detail = data.detail || (Array.isArray(data.detail) ? data.detail[0]?.msg : null) || 'Gagal menambahkan akun.';
+        showManageMsg(typeof detail === 'string' ? detail : 'Username tidak valid.', true);
+        return;
+      }
+
+      showManageMsg(`@${data.username} berhasil ditambahkan. Akan mulai dicek di siklus berikutnya.`, false);
+      newUsernameInput.value = '';
+      loadManageList();
+    } catch (err) {
+      showManageMsg(`Gagal menghubungi server. (${err.message})`, true);
+    } finally {
+      addAccountBtn.disabled = false;
+      addAccountBtn.textContent = '+ Tambah Akun';
+    }
+  }
+
+  async function deleteManagedAccount(username) {
+    if (!confirm(`Hapus @${username} dari daftar pantauan? Riwayat live sebelumnya tetap tersimpan.`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/accounts/${username}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json();
+        showManageMsg(data.detail || 'Gagal menghapus akun.', true);
+        return;
+      }
+      loadManageList();
+    } catch (err) {
+      showManageMsg(`Gagal menghubungi server. (${err.message})`, true);
+    }
+  }
+
+  addAccountBtn.addEventListener('click', addManagedAccount);
+  newUsernameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addManagedAccount();
+  });
+  manageSearchInput.addEventListener('input', () => {
+    manageSearchTerm = manageSearchInput.value.trim().toLowerCase();
+    renderManageList();
+  });
 </script>
 
 </body>
