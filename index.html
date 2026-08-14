@@ -266,6 +266,42 @@
     pointer-events: none;
   }
 
+  /* ---------- Banner peringatan sistemik (data usang menyeluruh) ---------- */
+
+  .stale-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: rgba(255, 200, 87, 0.08);
+    border: 1px solid rgba(255, 200, 87, 0.35);
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+  }
+
+  .stale-banner-icon {
+    color: var(--gold);
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .stale-banner-title {
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  .stale-banner-body {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-dim);
+  }
+
+  .stale-banner-body b { color: var(--text); }
+
   @media (max-width: 600px) {
     .search-box { margin-left: 0; width: 100%; }
     .search-box input { width: 100%; }
@@ -861,6 +897,7 @@
   </div>
 
   <div id="view-live">
+    <div id="stale-banner" class="stale-banner" style="display:none;"></div>
     <div class="filter-row">
       <button class="filter-btn active" data-region="all">Semua</button>
       <button class="filter-btn" data-region="jogja">Jogja</button>
@@ -930,6 +967,7 @@
   const API_BASE = "https://report-marketing-production.up.railway.app";
 
   const grid = document.getElementById('grid');
+  const staleBanner = document.getElementById('stale-banner');
   const statLive = document.getElementById('stat-live');
   const statTotal = document.getElementById('stat-total');
   const statUpdated = document.getElementById('stat-updated');
@@ -963,23 +1001,37 @@
     return String(n);
   }
 
+  // Deteksi "data usang": kalau percobaan terakhir (last_attempt) lebih dari
+  // 5 menit setelah pengecekan terakhir yang BERHASIL (last_checked), berarti
+  // sistem sedang gagal berulang untuk akun ini -- status yang ditampilkan
+  // mungkin sudah tidak akurat.
+  function isAccountStale(acc) {
+    if (acc.last_attempt && acc.last_checked) {
+      const gapMs = new Date(acc.last_attempt) - new Date(acc.last_checked);
+      return gapMs > 5 * 60 * 1000;
+    } else if (acc.last_attempt && !acc.last_checked) {
+      return true; // belum pernah berhasil dicek sama sekali
+    }
+    return false;
+  }
+
+  // Ambang batas: kalau proporsi akun yang "usang" melewati ini, dianggap
+  // masalah SISTEMIK (misal blokir dari TikTok), bukan masalah akun
+  // per-akun -- tampilkan 1 banner besar, bukan badge berulang di tiap kartu.
+  const SYSTEMIC_STALE_THRESHOLD = 0.25; // 25%
+  let systemicStaleMode = false;
+
   function renderCard(acc) {
     const isLive = !!acc.is_live;
     const avatarStyle = acc.avatar_url ? `style="background-image:url('${acc.avatar_url}')"` : '';
     const avatarContent = acc.avatar_url ? '' : initials(acc.username);
     const viewers = formatViewers(acc.viewer_count);
+    const isStale = isAccountStale(acc);
 
-    // Deteksi "data usang": kalau percobaan terakhir (last_attempt) lebih
-    // dari 5 menit setelah pengecekan terakhir yang BERHASIL (last_checked),
-    // berarti sistem sedang gagal berulang untuk akun ini -- status yang
-    // ditampilkan mungkin sudah tidak akurat.
-    let isStale = false;
-    if (acc.last_attempt && acc.last_checked) {
-      const gapMs = new Date(acc.last_attempt) - new Date(acc.last_checked);
-      isStale = gapMs > 5 * 60 * 1000;
-    } else if (acc.last_attempt && !acc.last_checked) {
-      isStale = true; // belum pernah berhasil dicek sama sekali
-    }
+    // Kalau sedang mode sistemik, badge per-kartu disembunyikan (sudah
+    // diwakili oleh banner besar di atas) supaya dashboard tidak penuh
+    // badge kuning berulang-ulang.
+    const showStaleBadge = isStale && !systemicStaleMode;
 
     return `
       <div class="card ${isLive ? 'live' : ''}" onclick="openAccountDetail('${acc.username}')">
@@ -993,7 +1045,7 @@
             </div>
           </div>
         </div>
-        ${isStale ? `<div class="stale-badge" title="${acc.last_error || 'Gagal dicek berulang kali'}">⚠ Data mungkin usang · gagal dicek ${timeAgo(acc.last_attempt)}</div>` : ''}
+        ${showStaleBadge ? `<div class="stale-badge" title="${acc.last_error || 'Gagal dicek berulang kali'}">⚠ Data mungkin usang · gagal dicek ${timeAgo(acc.last_attempt)}</div>` : ''}
         ${isLive ? `<div class="title-text">${acc.title || 'Tanpa judul'}</div>` : `<div class="title-text"></div>`}
         <div class="card-bottom">
           <div class="viewers">
@@ -1003,6 +1055,45 @@
         </div>
       </div>
     `;
+  }
+
+  function updateSystemicBanner() {
+    const total = allAccounts.length;
+    if (total === 0) {
+      staleBanner.style.display = 'none';
+      systemicStaleMode = false;
+      return;
+    }
+
+    const staleCount = allAccounts.filter(isAccountStale).length;
+    const ratio = staleCount / total;
+    systemicStaleMode = ratio >= SYSTEMIC_STALE_THRESHOLD;
+
+    if (!systemicStaleMode) {
+      staleBanner.style.display = 'none';
+      return;
+    }
+
+    // Cari waktu pengecekan BERHASIL paling baru di antara semua akun,
+    // supaya banner bisa bilang "terakhir kali data ini valid jam berapa".
+    const successTimes = allAccounts
+      .map(a => a.last_checked)
+      .filter(Boolean)
+      .map(t => new Date(t).getTime());
+    const latestSuccess = successTimes.length > 0 ? new Date(Math.max(...successTimes)).toISOString() : null;
+
+    staleBanner.innerHTML = `
+      <div class="stale-banner-icon">⚠</div>
+      <div>
+        <div class="stale-banner-title">Gangguan koneksi ke TikTok terdeteksi</div>
+        <div class="stale-banner-body">
+          ${staleCount} dari ${total} akun gagal dicek pada siklus terakhir. Status yang ditampilkan mungkin belum
+          mencerminkan kondisi terkini di TikTok.
+          ${latestSuccess ? `Update terakhir yang berhasil: <b>${timeAgo(latestSuccess)}</b>.` : ''}
+        </div>
+      </div>
+    `;
+    staleBanner.style.display = 'flex';
   }
 
   function applyFilterAndRender() {
@@ -1037,7 +1128,9 @@
         grid.innerHTML = '<div class="empty">Belum ada data. Menunggu pengecekan pertama…</div>';
         statLive.textContent = 0;
         statTotal.textContent = 0;
+        staleBanner.style.display = 'none';
       } else {
+        updateSystemicBanner();
         applyFilterAndRender();
       }
 
