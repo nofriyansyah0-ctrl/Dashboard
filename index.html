@@ -2,8 +2,19 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Live Monitor Akun TikTok</title>
+
+<!-- PWA: manifest & ikon -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#171310">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Live Monitor">
+<meta name="mobile-web-app-capable" content="yes">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -167,6 +178,59 @@
   }
   button#refresh:hover { border-color: var(--live); background: var(--live-soft); }
   button#refresh:disabled { opacity: 0.5; cursor: default; }
+
+  /* ---------- Export Excel ---------- */
+
+  .export-wrap {
+    position: relative;
+  }
+
+  #export-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 10px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  #export-btn:hover { border-color: var(--live); background: var(--live-soft); }
+  #export-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .export-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    z-index: 50;
+    min-width: 170px;
+    box-shadow: 0 8px 24px -8px rgba(0,0,0,0.6);
+  }
+
+  .export-menu.open { display: block; }
+
+  .export-menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .export-menu button:hover { background: rgba(255,122,26,0.1); color: var(--live); }
+  .export-menu button + button { border-top: 1px solid var(--line); }
 
   /* ---------- Main / filters ---------- */
 
@@ -1010,6 +1074,13 @@
       <span class="label">Update Terakhir</span>
     </div>
     <button id="refresh">↻ Refresh</button>
+    <div class="export-wrap">
+      <button id="export-btn">⬇ Export Excel</button>
+      <div id="export-menu" class="export-menu">
+        <button data-export-days="7">7 hari terakhir</button>
+        <button data-export-days="30">30 hari terakhir</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1885,6 +1956,55 @@
   manageSearchInput.addEventListener('input', () => {
     manageSearchTerm = manageSearchInput.value.trim().toLowerCase();
     renderManageList();
+  });
+
+  // ================== EXPORT EXCEL ==================
+
+  const exportBtn = document.getElementById('export-btn');
+  const exportMenu = document.getElementById('export-menu');
+  const exportOptions = document.querySelectorAll('#export-menu [data-export-days]');
+
+  exportBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    exportMenu.classList.toggle('open');
+  });
+
+  document.addEventListener('click', () => {
+    exportMenu.classList.remove('open');
+  });
+
+  async function downloadExcelReport(days) {
+    exportMenu.classList.remove('open');
+    exportBtn.disabled = true;
+    const originalText = exportBtn.textContent;
+    exportBtn.textContent = '⬇ Menyiapkan…';
+
+    try {
+      const res = await fetch(`${API_BASE}/api/export/excel?days=${days}&region=${currentRegion}`);
+      if (!res.ok) throw new Error(`Server merespons ${res.status}`);
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `laporan-live-monitor-${days}hari.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(`Gagal membuat laporan Excel. (${err.message})`);
+    } finally {
+      exportBtn.disabled = false;
+      exportBtn.textContent = originalText;
+    }
+  }
+
+  exportOptions.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      downloadExcelReport(parseInt(btn.dataset.exportDays, 10));
+    });
   });
 </script>
 
